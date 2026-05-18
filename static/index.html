@@ -599,6 +599,12 @@
             document.getElementById('countryName').innerText = data.country;
             initMap(data.city_details.latitude, data.city_details.longitude);
             startLiveClock(data.local_time_iso);
+            
+            if (data.gemini_summary) {
+                document.getElementById('aiSummary').innerHTML = `<span style="color:var(--accent); font-weight:800; font-size: 0.9rem;">✨ POWERED BY GOOGLE GEMINI</span><br><br>` + data.gemini_summary.replace(/\n/g, '<br>');
+            } else {
+                document.getElementById('aiSummary').innerHTML = generateAISummary(data);
+            }
         }
 
         const volObj = document.getElementById('volumeNum');
