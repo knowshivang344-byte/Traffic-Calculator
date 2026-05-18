@@ -172,7 +172,7 @@ def predict_traffic(req: PredictionRequest):
     gemini_summary = None
     if GEMINI_API_KEY and GEMINI_API_KEY != "your_api_key_here":
         try:
-            gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+            gemini_model = genai.GenerativeModel('gemini-2.5-flash')
             prompt = f"Act as a local traffic expert for {city_data['name']}, {city_data.get('country', '')}. My Machine Learning model predicts {status.upper()} traffic ({final_prediction} vehicles/hr). The weather is {weather_main} and {curr['temperature_2m']}°C. The local time is {local_dt.strftime('%I:%M %p')}. Give a short 2-sentence advisory. Importantly, mention 1 or 2 specific major highways, bridges, or famous roads in {city_data['name']} that are likely experiencing this."
             response = gemini_model.generate_content(prompt)
             gemini_summary = response.text.strip()
