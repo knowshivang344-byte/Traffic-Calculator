@@ -8,8 +8,9 @@ Enterprise-grade traffic volume analysis for global cities using real-time weath
 - **Live Weather Integration:** Uses the Open-Meteo API to fetch the exact local time and real-time weather conditions to feed into the prediction model.
 - **High-Accuracy AI:** Built on a fine-tuned Random Forest Regressor (R² = 0.94) optimized for time-series traffic patterns.
 
-## Snapshot
-![App UI](snapshot.png)
+## Snapshots
+![App Home UI](snapshot.png)
+![App Prediction Result](snapshot_result.png)
 
 ## Tech Stack
 - **Backend:** FastAPI, Python, Pandas, Numpy, Scikit-Learn
