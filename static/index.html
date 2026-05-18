@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Traffic AI | Pro Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
+        
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #f093fb;
+            --bg: #050a0f;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 172, 254, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(240, 147, 251, 0.1) 0px, transparent 50%);
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 2rem;
+            z-index: 10;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 2.5rem;
+            border: var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 0 0.5rem 0;
+            background: linear-gradient(to bottom, #fff 40%, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .description {
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            border: var(--glass-border);
+            background: rgba(255, 255, 255, 0.02);
+            color: white;
+            font-family: inherit;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+        }
+
+        button {
+            width: 100%;
+            padding: 1.2rem;
+            border-radius: 16px;
+            border: none;
+            background: #fff;
+            color: #000;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.3);
+        }
+
+        .results {
+            margin-top: 2.5rem;
+            display: none;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .city-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-pill {
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .status-heavy { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .status-moderate { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .status-low { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .main-prediction {
+            margin-bottom: 2rem;
+        }
+
+        .volume-num {
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -4px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to bottom, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .volume-unit {
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 2rem;
+        }
+
+        .stat-box {
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            border: var(--glass-border);
+            text-align: left;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .loader {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card">
+        <span class="logo">TRAFFIC CORE AI</span>
+        <h1>World Predictor</h1>
+        <p class="description">Enterprise-grade traffic volume analysis for global cities using real-time weather data.</p>
+
+        <div class="input-wrapper">
+            <input type="text" id="cityInput" placeholder="Enter city name..." autocomplete="off">
+        </div>
+
+        <button id="analyzeBtn" onclick="analyze()">
+            <span id="btnText">START ANALYSIS</span>
+            <div id="loader" class="loader"></div>
+        </button>
+
+        <div id="results" class="results">
+            <div class="city-badge">
+                📍 <span id="cityName">City</span>, <span id="countryName">Country</span>
+                <span id="statusPill" class="status-pill">MODERATE</span>
+            </div>
+
+            <div class="main-prediction">
+                <div id="volumeNum" class="volume-num">0000</div>
+                <div class="volume-unit">Predicted Vehicles / Hour</div>
+            </div>
+
+            <div class="grid-stats">
+                <div class="stat-box">
+                    <span class="stat-label">Weather</span>
+                    <div class="stat-value"><span id="weatherMain">Clear</span> • <span id="temp">0</span>°C</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Local Time</span>
+                    <div class="stat-value" id="localTime">--:-- --</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Precipitation</span>
+                    <div class="stat-value"><span id="rain">0</span> mm/h</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Population Scale</span>
+                    <div class="stat-value"><span id="popScale">1.0</span>x</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function animateValue(obj, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeOut = 1 - Math.pow(1 - progress, 4);
+            obj.innerHTML = Math.floor(easeOut * (end - start) + start).toString().padStart(4, '0');
+            if (progress < 1) window.requestAnimationFrame(step);
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    async function analyze() {
+        const city = document.getElementById('cityInput').value.trim();
+        const btnText = document.getElementById('btnText');
+        const loader = document.getElementById('loader');
+        const results = document.getElementById('results');
+
+        if(!city) return;
+
+        btnText.style.display = 'none';
+        loader.style.display = 'block';
+        results.style.display = 'none';
+
+        try {
+            const resp = await fetch('/predict', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({city: city})
+            });
+            const data = await resp.json();
+            
+            if(!resp.ok) throw new Error(data.detail);
+
+            // Update UI
+            document.getElementById('cityName').innerText = data.city;
+            document.getElementById('countryName').innerText = data.country;
+            document.getElementById('weatherMain').innerText = data.weather.main;
+            document.getElementById('temp').innerText = data.weather.temp_c;
+            document.getElementById('rain').innerText = data.weather.rain_mm;
+            document.getElementById('localTime').innerText = data.local_time;
+            document.getElementById('popScale').innerText = data.prediction.pop_scale;
+
+            const pill = document.getElementById('statusPill');
+            pill.innerText = data.prediction.status;
+            pill.className = 'status-pill status-' + data.prediction.status.toLowerCase();
+
+            results.style.display = 'block';
+            animateValue(document.getElementById('volumeNum'), 0, data.prediction.volume, 2000);
+
+        } catch (e) {
+            alert(e.message);
+        } finally {
+            btnText.style.display = 'block';
+            loader.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
