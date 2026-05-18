@@ -9,7 +9,7 @@ Enterprise-grade traffic volume analysis for global cities using real-time weath
 - **High-Accuracy AI:** Built on a fine-tuned Random Forest Regressor (R² = 0.94) optimized for time-series traffic patterns.
 
 ## Snapshot
-*(Snapshot will be added shortly)*
+![App UI](snapshot.png)
 
 ## Tech Stack
 - **Backend:** FastAPI, Python, Pandas, Numpy, Scikit-Learn
