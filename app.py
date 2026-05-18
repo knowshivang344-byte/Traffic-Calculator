@@ -64,7 +64,7 @@ def predict_traffic(req: PredictionRequest):
     
     # 2. Weather & Local Time
     # Using timezone=auto to get the city's actual local time
-    weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,rain,cloud_cover,weather_code&timezone=auto"
+    weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,rain,cloud_cover,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto"
     weather_resp = requests.get(weather_url).json()
     
     if "current" not in weather_resp:
@@ -117,20 +117,52 @@ def predict_traffic(req: PredictionRequest):
     if final_prediction > 4000: status = "Heavy"
     elif final_prediction > 2000: status = "Moderate"
     
+    # Generate 24-hour trend
+    trend_data = []
+    labels = []
+    for h in range(24):
+        h_sin = np.sin(2 * np.pi * h / 24)
+        h_cos = np.cos(2 * np.pi * h / 24)
+        row = pd.DataFrame([[
+            h_sin, h_cos, day_of_week, month, is_weekend, is_holiday,
+            curr["temperature_2m"] + 273.15,
+            curr.get("rain", 0.0),
+            curr.get("cloud_cover", 0),
+            weather_enc
+        ]], columns=feature_names)
+        pred = int(model.predict(row)[0] * pop_scale)
+        trend_data.append(pred)
+        ampm = "AM" if h < 12 else "PM"
+        display_h = h if h <= 12 else h - 12
+        if display_h == 0: display_h = 12
+        labels.append(f"{display_h} {ampm}")
+        
     return {
         "city": city_data["name"],
         "country": city_data.get("country", "Unknown"),
         "local_time": local_dt.strftime("%I:%M %p"),
+        "city_details": {
+            "population": city_pop,
+            "latitude": lat,
+            "longitude": lon,
+            "timezone": weather_resp.get("timezone", "Unknown")
+        },
         "weather": {
             "main": weather_main,
             "temp_c": curr["temperature_2m"],
             "rain_mm": curr.get("rain", 0.0),
-            "clouds": curr.get("cloud_cover", 0)
+            "clouds": curr.get("cloud_cover", 0),
+            "wind_kph": curr.get("wind_speed_10m", 0.0),
+            "humidity": curr.get("relative_humidity_2m", 0)
         },
         "prediction": {
             "volume": final_prediction,
             "status": status,
             "pop_scale": round(pop_scale, 2)
+        },
+        "trend": {
+            "labels": labels,
+            "data": trend_data
         }
     }
 
