@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Traffic AI | Pro Dashboard</title>
+    
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet CSS & JS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
         
@@ -98,11 +105,11 @@
         .dashboard {
             display: none;
             padding: 2rem 3rem;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 1fr 1.5fr;
             gap: 2rem;
             animation: fadeIn 0.8s ease;
         }
@@ -127,8 +134,7 @@
             border-color: rgba(255, 255, 255, 0.15);
         }
 
-        /* Left Column: City & Weather Data */
-        .left-col {
+        .left-col, .right-col {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -144,11 +150,32 @@
 
         .subtitle {
             color: var(--text-muted);
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+        }
+
+        /* Clock */
+        .live-clock {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            font-weight: 600;
+            background: rgba(0, 242, 254, 0.1);
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        /* Map */
+        #map {
+            height: 250px;
+            width: 100%;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            border: var(--glass-border);
+            z-index: 1; /* Keep leaflet under glass */
         }
 
         .data-grid {
@@ -162,6 +189,7 @@
             padding: 1rem;
             border-radius: 16px;
             border: var(--glass-border);
+            position: relative;
         }
 
         .data-label {
@@ -175,23 +203,37 @@
         .data-value {
             font-size: 1.2rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Right Column: Prediction & Graphs */
-        .right-col {
+        /* Weather Animation */
+        .weather-icon {
+            font-size: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Hero & Gauge */
+        .prediction-hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .volume-box {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .prediction-hero {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .volume-num {
-            font-size: 5.5rem;
+            font-size: 5rem;
             font-weight: 800;
             line-height: 1;
             font-family: 'JetBrains Mono', monospace;
@@ -206,6 +248,7 @@
             font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 2px;
+            margin-bottom: 1rem;
         }
 
         .status-pill {
@@ -215,15 +258,43 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
+            display: inline-block;
+            text-align: center;
         }
-
         .status-heavy { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
         .status-moderate { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
         .status-low { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
 
+        .gauge-container {
+            position: relative;
+            height: 150px;
+            width: 100%;
+        }
+
+        /* AI Insights Box */
+        .ai-insights {
+            background: linear-gradient(to right, rgba(240, 147, 251, 0.05), rgba(79, 172, 254, 0.05));
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 0 16px 16px 0;
+            margin-top: 1.5rem;
+        }
+        .ai-insights h4 {
+            margin: 0 0 10px 0;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ai-insights p {
+            margin: 0;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 250px;
             width: 100%;
             margin-top: 1rem;
         }
@@ -252,7 +323,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Initial empty state */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -268,9 +338,9 @@
             margin-bottom: 1rem;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
             .dashboard { grid-template-columns: 1fr; }
-            .prediction-hero { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .prediction-hero { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -286,37 +356,32 @@
 
 <div class="loader-overlay" id="loader">
     <div class="spinner"></div>
-    <h3>Running AI Models...</h3>
+    <h3>Running AI Models & Gathering Intel...</h3>
 </div>
 
 <div class="empty-state" id="emptyState">
     <h2>Global Traffic Intelligence</h2>
-    <p>Enter a city in the search bar above to generate a real-time traffic volume prediction<br>using live weather data and population scaling.</p>
+    <p>Enter a city in the search bar above to generate a real-time traffic volume prediction<br>using live weather data, mapping, and population scaling.</p>
 </div>
 
 <div class="dashboard" id="dashboard">
-    <!-- Left Column: City & Weather -->
+    <!-- Left Column: Data & Map -->
     <div class="left-col">
         <div class="glass-panel">
             <div class="city-header">
                 <h1 id="cityName">City</h1>
                 <div class="subtitle">
-                    📍 <span id="countryName">Country</span> • 🕒 <span id="localTime">--:--</span>
+                    📍 <span id="countryName">Country</span> 
+                    <span class="live-clock" id="liveClock">--:--:--</span>
                 </div>
             </div>
+            
+            <div id="map"></div>
             
             <div class="data-grid">
                 <div class="data-card">
                     <div class="data-label">Population</div>
                     <div class="data-value" id="population">--</div>
-                </div>
-                <div class="data-card">
-                    <div class="data-label">Coordinates</div>
-                    <div class="data-value" id="coords">--</div>
-                </div>
-                <div class="data-card">
-                    <div class="data-label">Timezone</div>
-                    <div class="data-value" id="timezone">--</div>
                 </div>
                 <div class="data-card">
                     <div class="data-label">AI Pop Scale</div>
@@ -330,7 +395,10 @@
             <div class="data-grid">
                 <div class="data-card">
                     <div class="data-label">Condition</div>
-                    <div class="data-value" id="weatherMain">--</div>
+                    <div class="data-value">
+                        <span class="weather-icon" id="weatherIcon">☁️</span>
+                        <span id="weatherMain">--</span>
+                    </div>
                 </div>
                 <div class="data-card">
                     <div class="data-label">Temperature</div>
@@ -348,15 +416,23 @@
         </div>
     </div>
 
-    <!-- Right Column: Predictions -->
+    <!-- Right Column: Predictions & AI -->
     <div class="right-col">
         <div class="glass-panel">
             <div class="prediction-hero">
-                <div>
+                <div class="volume-box">
                     <div class="volume-num" id="volumeNum">0000</div>
-                    <div class="volume-label">Current Predicted Vehicles / Hour</div>
+                    <div class="volume-label">Predicted Vehicles / Hour</div>
+                    <div id="statusPill" class="status-pill">--</div>
                 </div>
-                <div id="statusPill" class="status-pill">--</div>
+                <div class="gauge-container">
+                    <canvas id="gaugeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="ai-insights">
+                <h4>🧠 AI Traffic Insights</h4>
+                <p id="aiSummary">Analyzing conditions...</p>
             </div>
         </div>
 
@@ -374,6 +450,21 @@
 
 <script>
     let trendChartInstance = null;
+    let gaugeChartInstance = null;
+    let mapInstance = null;
+    let clockInterval = null;
+    let currentCityDate = null;
+
+    // Weather Icon Mapping
+    const weatherIcons = {
+        'Clear': '☀️',
+        'Clouds': '☁️',
+        'Rain': '🌧️',
+        'Drizzle': '🌦️',
+        'Thunderstorm': '⛈️',
+        'Snow': '❄️',
+        'Fog': '🌫️'
+    };
 
     function animateValue(obj, start, end, duration) {
         let startTimestamp = null;
@@ -385,6 +476,72 @@
             if (progress < 1) window.requestAnimationFrame(step);
         };
         window.requestAnimationFrame(step);
+    }
+
+    function initMap(lat, lon) {
+        if (!mapInstance) {
+            mapInstance = L.map('map').setView([lat, lon], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapInstance);
+        } else {
+            mapInstance.setView([lat, lon], 12);
+        }
+        
+        // Remove old markers
+        mapInstance.eachLayer((layer) => {
+            if (layer instanceof L.Marker) { mapInstance.removeLayer(layer); }
+        });
+        
+        // Add new pulse marker
+        const circleIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color:var(--primary);width:15px;height:15px;border-radius:50%;box-shadow: 0 0 15px var(--primary);"></div>`,
+            iconSize: [15, 15]
+        });
+        L.marker([lat, lon], {icon: circleIcon}).addTo(mapInstance);
+    }
+
+    function startLiveClock(isoString) {
+        if (clockInterval) clearInterval(clockInterval);
+        currentCityDate = new Date(isoString);
+        
+        const clockEl = document.getElementById('liveClock');
+        
+        clockInterval = setInterval(() => {
+            currentCityDate.setSeconds(currentCityDate.getSeconds() + 1);
+            clockEl.innerText = currentCityDate.toLocaleTimeString('en-US', { 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
+            });
+        }, 1000);
+    }
+
+    function generateAISummary(data) {
+        const vol = data.prediction.volume;
+        const weather = data.weather.main;
+        const isWeekend = data.is_weekend;
+        const isHoliday = data.is_holiday;
+        
+        let summary = `Traffic is currently <strong>${data.prediction.status}</strong> in ${data.city}. `;
+        
+        // Time factor
+        const hour = currentCityDate.getHours();
+        if (hour >= 7 && hour <= 9) summary += "This is typical for the morning rush hour. ";
+        else if (hour >= 16 && hour <= 18) summary += "Expect delays due to the evening commute. ";
+        else if (hour >= 23 || hour <= 4) summary += "Roads are clear due to late night hours. ";
+        
+        // Day factor
+        if (isHoliday) summary += "However, holiday patterns are heavily altering standard traffic flow. ";
+        else if (isWeekend) summary += "Weekend leisure driving is keeping volumes steady but lower than weekdays. ";
+        
+        // Weather factor
+        if (weather === 'Rain' || weather === 'Thunderstorm' || weather === 'Snow') {
+            summary += `The current ${weather.toLowerCase()} is likely reducing overall speeds and increasing congestion.`;
+        } else if (weather === 'Clear' && (vol > 4000)) {
+            summary += "Despite clear weather, volume remains very high.";
+        }
+        
+        return summary;
     }
 
     async function analyze() {
@@ -403,37 +560,35 @@
             
             if(!resp.ok) throw new Error(data.detail);
 
-            // Hide empty state, show dashboard
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('dashboard').style.display = 'grid';
 
-            // Populate Data
+            // Basics
             document.getElementById('cityName').innerText = data.city;
             document.getElementById('countryName').innerText = data.country;
-            document.getElementById('localTime').innerText = data.local_time;
-            
-            // City Details
             document.getElementById('population').innerText = data.city_details.population.toLocaleString();
-            document.getElementById('coords').innerText = `${data.city_details.latitude.toFixed(2)}°, ${data.city_details.longitude.toFixed(2)}°`;
-            document.getElementById('timezone').innerText = data.city_details.timezone;
             document.getElementById('popScale').innerText = data.prediction.pop_scale + 'x';
-
+            
             // Weather
             document.getElementById('weatherMain').innerText = data.weather.main;
+            document.getElementById('weatherIcon').innerText = weatherIcons[data.weather.main] || '☁️';
             document.getElementById('temp').innerText = data.weather.temp_c;
             document.getElementById('wind').innerText = data.weather.wind_kph;
             document.getElementById('humidity').innerText = data.weather.humidity;
 
-            // Prediction Status
+            // Prediction
             const pill = document.getElementById('statusPill');
             pill.innerText = data.prediction.status + ' TRAFFIC';
             pill.className = 'status-pill status-' + data.prediction.status.toLowerCase();
-
-            // Animate Main Volume
             animateValue(document.getElementById('volumeNum'), 0, data.prediction.volume, 2000);
 
-            // Render Chart
-            renderChart(data.trend.labels, data.trend.data);
+            // New Features Init
+            startLiveClock(data.local_time_iso);
+            initMap(data.city_details.latitude, data.city_details.longitude);
+            document.getElementById('aiSummary').innerHTML = generateAISummary(data);
+            
+            renderTrendChart(data.trend.labels, data.trend.data);
+            renderGaugeChart(data.prediction.volume);
 
         } catch (e) {
             alert(e.message);
@@ -442,16 +597,12 @@
         }
     }
 
-    function renderChart(labels, data) {
+    function renderTrendChart(labels, data) {
         const ctx = document.getElementById('trendChart').getContext('2d');
-        
-        if (trendChartInstance) {
-            trendChartInstance.destroy();
-        }
+        if (trendChartInstance) trendChartInstance.destroy();
 
-        // Gradient for line
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(0, 242, 254, 0.5)');
+        gradient.addColorStop(0, 'rgba(240, 147, 251, 0.5)');
         gradient.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
 
         trendChartInstance = new Chart(ctx, {
@@ -461,51 +612,60 @@
                 datasets: [{
                     label: 'Predicted Vehicles / Hour',
                     data: data,
-                    borderColor: '#00f2fe',
+                    borderColor: '#f093fb',
                     backgroundColor: gradient,
                     borderWidth: 3,
-                    pointBackgroundColor: '#f093fb',
+                    pointBackgroundColor: '#00f2fe',
                     pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
                     pointRadius: 4,
-                    pointHoverRadius: 6,
                     fill: true,
-                    tension: 0.4 // Smooth curves
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(5, 10, 15, 0.9)',
-                        titleFont: { family: 'Outfit', size: 14 },
-                        bodyFont: { family: 'JetBrains Mono', size: 14 },
-                        padding: 12,
-                        displayColors: false,
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.y + ' vehicles';
-                            }
-                        }
-                    }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8', maxTicksLimit: 12, font: { family: 'Outfit' } }
-                    }
-                },
-                animation: {
-                    duration: 2000,
-                    easing: 'easeOutQuart'
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
                 }
+            }
+        });
+    }
+
+    function renderGaugeChart(volume) {
+        const ctx = document.getElementById('gaugeChart').getContext('2d');
+        if (gaugeChartInstance) gaugeChartInstance.destroy();
+        
+        // Gauge max is roughly 8000 for standard scale
+        const maxVol = 8000;
+        let percentage = (volume / maxVol) * 100;
+        if (percentage > 100) percentage = 100;
+
+        let color = '#10b981'; // green
+        if (volume > 2000) color = '#f59e0b'; // orange
+        if (volume > 4000) color = '#ef4444'; // red
+
+        gaugeChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [percentage, 100 - percentage],
+                    backgroundColor: [color, 'rgba(255, 255, 255, 0.05)'],
+                    borderWidth: 0,
+                    circumference: 180,
+                    rotation: 270
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '80%',
+                plugins: {
+                    tooltip: { enabled: false }
+                },
+                animation: { animateRotate: true, duration: 2000 }
             }
         });
     }

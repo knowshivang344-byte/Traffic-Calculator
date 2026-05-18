@@ -141,6 +141,9 @@ def predict_traffic(req: PredictionRequest):
         "city": city_data["name"],
         "country": city_data.get("country", "Unknown"),
         "local_time": local_dt.strftime("%I:%M %p"),
+        "local_time_iso": local_dt.isoformat(),
+        "is_weekend": bool(is_weekend),
+        "is_holiday": bool(is_holiday),
         "city_details": {
             "population": city_pop,
             "latitude": lat,
