@@ -24,6 +24,20 @@
             --glass-border: 1px solid rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
             --text-muted: #94a3b8;
+            --map-filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        /* Light Mode Variables */
+        body.light-mode {
+            --primary: #0284c7;
+            --secondary: #0ea5e9;
+            --accent: #d946ef;
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: 1px solid rgba(0, 0, 0, 0.1);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --map-filter: none;
         }
 
         body {
@@ -39,16 +53,18 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            transition: background-color 0.5s, color 0.5s;
         }
 
         .navbar {
-            padding: 1.5rem 3rem;
+            padding: 1rem 3rem;
             border-bottom: var(--glass-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(5, 10, 15, 0.5);
+            background: rgba(var(--bg), 0.5);
             backdrop-filter: blur(10px);
+            transition: 0.5s;
         }
 
         .logo {
@@ -63,24 +79,24 @@
             display: flex;
             gap: 1rem;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
+            align-items: center;
         }
 
-        input {
-            flex: 1;
-            padding: 0.8rem 1.5rem;
+        input, select {
+            padding: 0.8rem 1.2rem;
             border-radius: 12px;
             border: var(--glass-border);
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+            background: rgba(128, 128, 128, 0.1);
+            color: var(--text-main);
             font-family: inherit;
             font-size: 1rem;
             outline: none;
             transition: 0.3s;
         }
+        input { flex: 1; }
 
-        input:focus {
-            background: rgba(255, 255, 255, 0.1);
+        input:focus, select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
         }
@@ -90,7 +106,7 @@
             border-radius: 12px;
             border: none;
             background: linear-gradient(135deg, var(--secondary), var(--primary));
-            color: #000;
+            color: #fff;
             font-weight: 800;
             font-size: 1rem;
             cursor: pointer;
@@ -100,6 +116,16 @@
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
+        }
+
+        .theme-toggle {
+            background: rgba(128, 128, 128, 0.1);
+            border: var(--glass-border);
+            color: var(--text-main);
+            padding: 0.8rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
         }
 
         .dashboard {
@@ -126,12 +152,10 @@
             padding: 2rem;
             border: var(--glass-border);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s;
+            transition: 0.5s;
         }
-
-        .glass-panel:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.15);
+        body.light-mode .glass-panel {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
         }
 
         .left-col, .right-col {
@@ -143,7 +167,7 @@
         .city-header h1 {
             font-size: 2.5rem;
             margin: 0 0 0.5rem 0;
-            background: linear-gradient(to right, #fff, #94a3b8);
+            background: linear-gradient(to right, var(--text-main), var(--text-muted));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -157,7 +181,6 @@
             gap: 12px;
         }
 
-        /* Clock */
         .live-clock {
             font-family: 'JetBrains Mono', monospace;
             color: var(--primary);
@@ -170,12 +193,14 @@
 
         /* Map */
         #map {
-            height: 250px;
+            height: 200px;
             width: 100%;
             border-radius: 16px;
             margin-bottom: 1.5rem;
             border: var(--glass-border);
-            z-index: 1; /* Keep leaflet under glass */
+            z-index: 1;
+            filter: var(--map-filter);
+            transition: filter 0.5s;
         }
 
         .data-grid {
@@ -185,11 +210,10 @@
         }
 
         .data-card {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(128, 128, 128, 0.05);
             padding: 1rem;
             border-radius: 16px;
             border: var(--glass-border);
-            position: relative;
         }
 
         .data-label {
@@ -203,33 +227,14 @@
         .data-value {
             font-size: 1.2rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Weather Animation */
-        .weather-icon {
-            font-size: 1.5rem;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
         }
 
         /* Hero & Gauge */
         .prediction-hero {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1.2fr 1fr;
             align-items: center;
             gap: 2rem;
-        }
-
-        .volume-box {
-            display: flex;
-            flex-direction: column;
         }
 
         .volume-num {
@@ -237,7 +242,7 @@
             font-weight: 800;
             line-height: 1;
             font-family: 'JetBrains Mono', monospace;
-            background: linear-gradient(to bottom, #fff, var(--primary));
+            background: linear-gradient(to bottom, var(--text-main), var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
@@ -251,45 +256,62 @@
             margin-bottom: 1rem;
         }
 
-        .status-pill {
-            padding: 8px 20px;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            display: inline-block;
-            text-align: center;
-        }
-        .status-heavy { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .status-moderate { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .status-low { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-
         .gauge-container {
             position: relative;
             height: 150px;
             width: 100%;
         }
 
-        /* AI Insights Box */
-        .ai-insights {
-            background: linear-gradient(to right, rgba(240, 147, 251, 0.05), rgba(79, 172, 254, 0.05));
-            border-left: 4px solid var(--accent);
-            padding: 1.5rem;
-            border-radius: 0 16px 16px 0;
+        /* Explainable AI Grid */
+        .xai-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-top: 1.5rem;
         }
-        .ai-insights h4 {
-            margin: 0 0 10px 0;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .xai-card {
+            background: rgba(128, 128, 128, 0.05);
+            border: var(--glass-border);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
         }
-        .ai-insights p {
-            margin: 0;
-            color: #cbd5e1;
-            line-height: 1.6;
+        .xai-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+        .pos { color: #10b981; }
+        .neg { color: #ef4444; }
+
+        /* Simulators */
+        .simulator-box {
+            margin-top: 1.5rem;
+            border-top: var(--glass-border);
+            padding-top: 1.5rem;
+        }
+        .simulator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .sim-control {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .sim-control label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary);
         }
 
         .chart-container {
@@ -303,24 +325,21 @@
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(5, 10, 15, 0.8);
+            background: rgba(var(--bg), 0.8);
             backdrop-filter: blur(5px);
             z-index: 100;
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
-
         .spinner {
             width: 50px;
             height: 50px;
-            border: 4px solid rgba(0, 242, 254, 0.1);
+            border: 4px solid rgba(128, 128, 128, 0.2);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .empty-state {
@@ -332,16 +351,6 @@
             text-align: center;
             color: var(--text-muted);
         }
-        .empty-state h2 {
-            color: #fff;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        @media (max-width: 1024px) {
-            .dashboard { grid-template-columns: 1fr; }
-            .prediction-hero { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
@@ -349,19 +358,19 @@
 <div class="navbar">
     <div class="logo">TRAFFIC CORE AI</div>
     <div class="search-container">
-        <input type="text" id="cityInput" placeholder="Enter any city globally (e.g., Tokyo, New York, Gwalior)...">
+        <input type="text" id="cityInput" placeholder="Enter any city globally...">
         <button onclick="analyze()">ANALYZE</button>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️</button>
     </div>
 </div>
 
 <div class="loader-overlay" id="loader">
     <div class="spinner"></div>
-    <h3>Running AI Models & Gathering Intel...</h3>
 </div>
 
 <div class="empty-state" id="emptyState">
     <h2>Global Traffic Intelligence</h2>
-    <p>Enter a city in the search bar above to generate a real-time traffic volume prediction<br>using live weather data, mapping, and population scaling.</p>
+    <p>Enter a city to view AI-powered traffic insights, live maps, and explainable AI metrics.</p>
 </div>
 
 <div class="dashboard" id="dashboard">
@@ -375,42 +384,30 @@
                     <span class="live-clock" id="liveClock">--:--:--</span>
                 </div>
             </div>
-            
             <div id="map"></div>
             
-            <div class="data-grid">
-                <div class="data-card">
-                    <div class="data-label">Population</div>
-                    <div class="data-value" id="population">--</div>
-                </div>
-                <div class="data-card">
-                    <div class="data-label">AI Pop Scale</div>
-                    <div class="data-value" id="popScale">--</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="glass-panel">
-            <h3 style="margin-top: 0; color: var(--primary);">Live Weather Conditions</h3>
-            <div class="data-grid">
-                <div class="data-card">
-                    <div class="data-label">Condition</div>
-                    <div class="data-value">
-                        <span class="weather-icon" id="weatherIcon">☁️</span>
-                        <span id="weatherMain">--</span>
+            <h3 style="margin-top: 0; color: var(--primary);">"What-If" AI Simulators 🎛️</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Adjust the weather to see how the AI reacts in real-time.</p>
+            <div class="simulator-box">
+                <div class="simulator-grid">
+                    <div class="sim-control">
+                        <label>Condition: <span id="simCondVal">--</span></label>
+                        <select id="simCond" onchange="runSimulation()">
+                            <option value="Clear">Clear ☀️</option>
+                            <option value="Clouds">Clouds ☁️</option>
+                            <option value="Rain">Rain 🌧️</option>
+                            <option value="Snow">Snow ❄️</option>
+                            <option value="Thunderstorm">Thunderstorm ⛈️</option>
+                        </select>
                     </div>
-                </div>
-                <div class="data-card">
-                    <div class="data-label">Temperature</div>
-                    <div class="data-value"><span id="temp">--</span> °C</div>
-                </div>
-                <div class="data-card">
-                    <div class="data-label">Wind Speed</div>
-                    <div class="data-value"><span id="wind">--</span> km/h</div>
-                </div>
-                <div class="data-card">
-                    <div class="data-label">Humidity</div>
-                    <div class="data-value"><span id="humidity">--</span> %</div>
+                    <div class="sim-control">
+                        <label>Temperature: <span id="simTempVal">20</span>°C</label>
+                        <input type="range" id="simTemp" min="-20" max="50" value="20" onchange="runSimulation()" oninput="document.getElementById('simTempVal').innerText=this.value">
+                    </div>
+                    <div class="sim-control">
+                        <label>Rainfall (mm): <span id="simRainVal">0</span></label>
+                        <input type="range" id="simRain" min="0" max="50" value="0" onchange="runSimulation()" oninput="document.getElementById('simRainVal').innerText=this.value">
+                    </div>
                 </div>
             </div>
         </div>
@@ -420,27 +417,38 @@
     <div class="right-col">
         <div class="glass-panel">
             <div class="prediction-hero">
-                <div class="volume-box">
+                <div>
                     <div class="volume-num" id="volumeNum">0000</div>
                     <div class="volume-label">Predicted Vehicles / Hour</div>
-                    <div id="statusPill" class="status-pill">--</div>
                 </div>
                 <div class="gauge-container">
                     <canvas id="gaugeChart"></canvas>
                 </div>
             </div>
 
-            <div class="ai-insights">
-                <h4>🧠 AI Traffic Insights</h4>
-                <p id="aiSummary">Analyzing conditions...</p>
+            <h4 style="color: var(--accent); margin-top: 2rem; margin-bottom: 0;">📊 Explainable AI (Model Reasoning)</h4>
+            <div class="xai-grid">
+                <div class="xai-card">
+                    <div class="data-label">Baseline Traffic</div>
+                    <div class="xai-val" id="xaiBase">--</div>
+                </div>
+                <div class="xai-card">
+                    <div class="data-label">Time Impact</div>
+                    <div class="xai-val" id="xaiTime">--</div>
+                </div>
+                <div class="xai-card">
+                    <div class="data-label">Weather Impact</div>
+                    <div class="xai-val" id="xaiWeather">--</div>
+                </div>
+                <div class="xai-card">
+                    <div class="data-label">Day Type Impact</div>
+                    <div class="xai-val" id="xaiDay">--</div>
+                </div>
             </div>
         </div>
 
         <div class="glass-panel">
-            <h3 style="margin-top: 0; color: var(--accent);">24-Hour AI Traffic Forecast</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
-                Simulated trend based on current weather conditions and cyclical time features.
-            </p>
+            <h3 style="margin-top: 0; color: var(--secondary);">24-Hour AI Traffic Forecast</h3>
             <div class="chart-container">
                 <canvas id="trendChart"></canvas>
             </div>
@@ -454,17 +462,20 @@
     let mapInstance = null;
     let clockInterval = null;
     let currentCityDate = null;
+    let currentCity = "";
 
-    // Weather Icon Mapping
-    const weatherIcons = {
-        'Clear': '☀️',
-        'Clouds': '☁️',
-        'Rain': '🌧️',
-        'Drizzle': '🌦️',
-        'Thunderstorm': '⛈️',
-        'Snow': '❄️',
-        'Fog': '🌫️'
-    };
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const btn = document.getElementById('themeBtn');
+        if (document.body.classList.contains('light-mode')) {
+            btn.innerText = '🌙';
+        } else {
+            btn.innerText = '☀️';
+        }
+        if (trendChartInstance && labelsCache) {
+            renderTrendChart(labelsCache, dataCache); // Re-render to update grid colors
+        }
+    }
 
     function animateValue(obj, start, end, duration) {
         let startTimestamp = null;
@@ -478,22 +489,31 @@
         window.requestAnimationFrame(step);
     }
 
+    function formatXAI(val, elementId) {
+        const el = document.getElementById(elementId);
+        if (val === undefined) { el.innerText = '--'; return; }
+        if (val > 0) {
+            el.innerText = '+' + val;
+            el.className = 'xai-val pos';
+        } else if (val < 0) {
+            el.innerText = val;
+            el.className = 'xai-val neg';
+        } else {
+            el.innerText = val;
+            el.className = 'xai-val';
+        }
+    }
+
     function initMap(lat, lon) {
         if (!mapInstance) {
-            mapInstance = L.map('map').setView([lat, lon], 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(mapInstance);
+            mapInstance = L.map('map', {zoomControl: false}).setView([lat, lon], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
         } else {
             mapInstance.setView([lat, lon], 12);
         }
-        
-        // Remove old markers
         mapInstance.eachLayer((layer) => {
             if (layer instanceof L.Marker) { mapInstance.removeLayer(layer); }
         });
-        
-        // Add new pulse marker
         const circleIcon = L.divIcon({
             className: 'custom-div-icon',
             html: `<div style="background-color:var(--primary);width:15px;height:15px;border-radius:50%;box-shadow: 0 0 15px var(--primary);"></div>`,
@@ -505,49 +525,18 @@
     function startLiveClock(isoString) {
         if (clockInterval) clearInterval(clockInterval);
         currentCityDate = new Date(isoString);
-        
-        const clockEl = document.getElementById('liveClock');
-        
         clockInterval = setInterval(() => {
             currentCityDate.setSeconds(currentCityDate.getSeconds() + 1);
-            clockEl.innerText = currentCityDate.toLocaleTimeString('en-US', { 
+            document.getElementById('liveClock').innerText = currentCityDate.toLocaleTimeString('en-US', { 
                 hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
             });
         }, 1000);
     }
 
-    function generateAISummary(data) {
-        const vol = data.prediction.volume;
-        const weather = data.weather.main;
-        const isWeekend = data.is_weekend;
-        const isHoliday = data.is_holiday;
-        
-        let summary = `Traffic is currently <strong>${data.prediction.status}</strong> in ${data.city}. `;
-        
-        // Time factor
-        const hour = currentCityDate.getHours();
-        if (hour >= 7 && hour <= 9) summary += "This is typical for the morning rush hour. ";
-        else if (hour >= 16 && hour <= 18) summary += "Expect delays due to the evening commute. ";
-        else if (hour >= 23 || hour <= 4) summary += "Roads are clear due to late night hours. ";
-        
-        // Day factor
-        if (isHoliday) summary += "However, holiday patterns are heavily altering standard traffic flow. ";
-        else if (isWeekend) summary += "Weekend leisure driving is keeping volumes steady but lower than weekdays. ";
-        
-        // Weather factor
-        if (weather === 'Rain' || weather === 'Thunderstorm' || weather === 'Snow') {
-            summary += `The current ${weather.toLowerCase()} is likely reducing overall speeds and increasing congestion.`;
-        } else if (weather === 'Clear' && (vol > 4000)) {
-            summary += "Despite clear weather, volume remains very high.";
-        }
-        
-        return summary;
-    }
-
     async function analyze() {
         const city = document.getElementById('cityInput').value.trim();
         if(!city) return;
-
+        currentCity = city;
         document.getElementById('loader').style.display = 'flex';
         
         try {
@@ -557,38 +546,16 @@
                 body: JSON.stringify({city: city})
             });
             const data = await resp.json();
-            
             if(!resp.ok) throw new Error(data.detail);
 
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'grid';
-
-            // Basics
-            document.getElementById('cityName').innerText = data.city;
-            document.getElementById('countryName').innerText = data.country;
-            document.getElementById('population').innerText = data.city_details.population.toLocaleString();
-            document.getElementById('popScale').innerText = data.prediction.pop_scale + 'x';
+            // Update UI & Setup Simulators
+            updateUI(data);
             
-            // Weather
-            document.getElementById('weatherMain').innerText = data.weather.main;
-            document.getElementById('weatherIcon').innerText = weatherIcons[data.weather.main] || '☁️';
-            document.getElementById('temp').innerText = data.weather.temp_c;
-            document.getElementById('wind').innerText = data.weather.wind_kph;
-            document.getElementById('humidity').innerText = data.weather.humidity;
-
-            // Prediction
-            const pill = document.getElementById('statusPill');
-            pill.innerText = data.prediction.status + ' TRAFFIC';
-            pill.className = 'status-pill status-' + data.prediction.status.toLowerCase();
-            animateValue(document.getElementById('volumeNum'), 0, data.prediction.volume, 2000);
-
-            // New Features Init
-            startLiveClock(data.local_time_iso);
-            initMap(data.city_details.latitude, data.city_details.longitude);
-            document.getElementById('aiSummary').innerHTML = generateAISummary(data);
-            
-            renderTrendChart(data.trend.labels, data.trend.data);
-            renderGaugeChart(data.prediction.volume);
+            document.getElementById('simCond').value = data.weather.main;
+            document.getElementById('simTemp').value = Math.round(data.weather.temp_c);
+            document.getElementById('simTempVal').innerText = Math.round(data.weather.temp_c);
+            document.getElementById('simRain').value = Math.round(data.weather.rain_mm);
+            document.getElementById('simRainVal').innerText = Math.round(data.weather.rain_mm);
 
         } catch (e) {
             alert(e.message);
@@ -597,38 +564,95 @@
         }
     }
 
+    async function runSimulation() {
+        if(!currentCity) return;
+        
+        const payload = {
+            city: currentCity,
+            override_weather: document.getElementById('simCond').value,
+            override_temp: parseFloat(document.getElementById('simTemp').value),
+            override_rain: parseFloat(document.getElementById('simRain').value)
+        };
+
+        try {
+            const resp = await fetch('/predict', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+            if(!resp.ok) throw new Error(data.detail);
+            updateUI(data, true);
+        } catch (e) {
+            console.error("Simulation failed:", e);
+        }
+    }
+
+    let labelsCache, dataCache;
+
+    function updateUI(data, isSim = false) {
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'grid';
+
+        if(!isSim) {
+            document.getElementById('cityName').innerText = data.city;
+            document.getElementById('countryName').innerText = data.country;
+            initMap(data.city_details.latitude, data.city_details.longitude);
+            startLiveClock(data.local_time_iso);
+        }
+
+        const volObj = document.getElementById('volumeNum');
+        const oldVol = parseInt(volObj.innerText) || 0;
+        animateValue(volObj, oldVol, data.prediction.volume, 1000);
+
+        // XAI Reasoning
+        document.getElementById('xaiBase').innerText = data.reasoning.baseline;
+        formatXAI(data.reasoning.impact_time, 'xaiTime');
+        formatXAI(data.reasoning.impact_weather, 'xaiWeather');
+        formatXAI(data.reasoning.impact_day, 'xaiDay');
+
+        renderGaugeChart(data.prediction.volume);
+        
+        labelsCache = data.trend.labels;
+        dataCache = data.trend.data;
+        renderTrendChart(labelsCache, dataCache);
+    }
+
     function renderTrendChart(labels, data) {
         const ctx = document.getElementById('trendChart').getContext('2d');
         if (trendChartInstance) trendChartInstance.destroy();
 
+        const isLight = document.body.classList.contains('light-mode');
+        const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+        const textColor = isLight ? '#475569' : '#94a3b8';
+        const primaryColor = isLight ? '#0284c7' : '#00f2fe';
+
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(240, 147, 251, 0.5)');
-        gradient.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+        gradient.addColorStop(0, isLight ? 'rgba(2, 132, 199, 0.4)' : 'rgba(240, 147, 251, 0.5)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
 
         trendChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Predicted Vehicles / Hour',
+                    label: 'Predicted Vehicles',
                     data: data,
-                    borderColor: '#f093fb',
+                    borderColor: primaryColor,
                     backgroundColor: gradient,
                     borderWidth: 3,
-                    pointBackgroundColor: '#00f2fe',
+                    pointBackgroundColor: isLight ? '#d946ef' : '#f093fb',
                     pointBorderColor: '#fff',
-                    pointRadius: 4,
                     fill: true,
                     tension: 0.4
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    y: { grid: { color: gridColor }, ticks: { color: textColor } },
+                    x: { grid: { display: false }, ticks: { color: textColor } }
                 }
             }
         });
@@ -638,34 +662,29 @@
         const ctx = document.getElementById('gaugeChart').getContext('2d');
         if (gaugeChartInstance) gaugeChartInstance.destroy();
         
-        // Gauge max is roughly 8000 for standard scale
         const maxVol = 8000;
         let percentage = (volume / maxVol) * 100;
         if (percentage > 100) percentage = 100;
 
-        let color = '#10b981'; // green
-        if (volume > 2000) color = '#f59e0b'; // orange
-        if (volume > 4000) color = '#ef4444'; // red
+        let color = '#10b981'; 
+        if (volume > 2000) color = '#f59e0b';
+        if (volume > 4000) color = '#ef4444';
 
         gaugeChartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 datasets: [{
                     data: [percentage, 100 - percentage],
-                    backgroundColor: [color, 'rgba(255, 255, 255, 0.05)'],
+                    backgroundColor: [color, document.body.classList.contains('light-mode') ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'],
                     borderWidth: 0,
                     circumference: 180,
                     rotation: 270
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '80%',
-                plugins: {
-                    tooltip: { enabled: false }
-                },
-                animation: { animateRotate: true, duration: 2000 }
+                responsive: true, maintainAspectRatio: false,
+                cutout: '80%', plugins: { tooltip: { enabled: false } },
+                animation: { duration: 1000 }
             }
         });
     }

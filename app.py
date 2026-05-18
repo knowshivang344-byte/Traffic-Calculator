@@ -23,6 +23,9 @@ except Exception as e:
 
 class PredictionRequest(BaseModel):
     city: str
+    override_temp: float = None
+    override_rain: float = None
+    override_weather: str = None
 
 def map_wmo_to_weather_main(code: int):
     """Maps Open-Meteo WMO codes to Metro Dataset weather_main categories."""
@@ -99,8 +102,20 @@ def predict_traffic(req: PredictionRequest):
     except:
         pass
 
-    # 3. Model Prediction
+    # Override Weather for "What-If" Simulation
+    if req.override_temp is not None: curr["temperature_2m"] = req.override_temp
+    if req.override_rain is not None: curr["rain"] = req.override_rain
+    if req.override_weather is not None:
+        weather_main = req.override_weather
+        try:
+            weather_enc = weather_encoder.transform([weather_main])[0]
+        except:
+            pass
+
+    # 3. Model Prediction & Explainable AI (Reasoning)
     # ['hour_sin', 'hour_cos', 'day_of_week', 'month', 'is_weekend', 'holiday', 'temp', 'rain_1h', 'clouds_all', 'weather_enc']
+    
+    # Current State Row
     input_data = pd.DataFrame([[
         hour_sin, hour_cos, day_of_week, month, is_weekend, is_holiday,
         curr["temperature_2m"] + 273.15, # Convert to Kelvin
@@ -111,6 +126,34 @@ def predict_traffic(req: PredictionRequest):
     
     base_prediction = model.predict(input_data)[0]
     final_prediction = int(base_prediction * pop_scale)
+    
+    # --- EXPLAINABLE AI (XAI) LOGIC ---
+    # 1. Baseline: Noon, Clear, Weekday, 20°C
+    base_weather_enc = weather_encoder.transform(['Clear'])[0]
+    baseline_row = pd.DataFrame([[
+        np.sin(2 * np.pi * 12 / 24), np.cos(2 * np.pi * 12 / 24), 2, month, 0, 0,
+        293.15, 0.0, 0, base_weather_enc
+    ]], columns=feature_names)
+    baseline_vol = int(model.predict(baseline_row)[0] * pop_scale)
+    
+    # 2. Time Impact: Actual time, but baseline weather/day
+    time_row = pd.DataFrame([[
+        hour_sin, hour_cos, 2, month, 0, 0,
+        293.15, 0.0, 0, base_weather_enc
+    ]], columns=feature_names)
+    time_vol = int(model.predict(time_row)[0] * pop_scale)
+    
+    # 3. Weather Impact: Actual time + Actual weather, but baseline day
+    weather_row = pd.DataFrame([[
+        hour_sin, hour_cos, 2, month, 0, 0,
+        curr["temperature_2m"] + 273.15, curr.get("rain", 0.0), curr.get("cloud_cover", 0), weather_enc
+    ]], columns=feature_names)
+    weather_vol = int(model.predict(weather_row)[0] * pop_scale)
+    
+    impact_time = time_vol - baseline_vol
+    impact_weather = weather_vol - time_vol
+    impact_day = final_prediction - weather_vol
+
     
     # Traffic Status
     status = "Low"
@@ -162,6 +205,12 @@ def predict_traffic(req: PredictionRequest):
             "volume": final_prediction,
             "status": status,
             "pop_scale": round(pop_scale, 2)
+        },
+        "reasoning": {
+            "baseline": baseline_vol,
+            "impact_time": impact_time,
+            "impact_weather": impact_weather,
+            "impact_day": impact_day
         },
         "trend": {
             "labels": labels,
