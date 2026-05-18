@@ -9,15 +9,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from dotenv import load_dotenv
-from google import genai
-
-load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-gemini_client = None
-if GEMINI_API_KEY and GEMINI_API_KEY != "your_api_key_here":
-    gemini_client = genai.Client(api_key=GEMINI_API_KEY)
-
 
 app = FastAPI(title="Pro Traffic AI Predictor")
 
@@ -168,20 +159,6 @@ def predict_traffic(req: PredictionRequest):
     status = "Low"
     if final_prediction > 4000: status = "Heavy"
     elif final_prediction > 2000: status = "Moderate"
-
-    # 4. Gemini AI Context
-    gemini_summary = None
-    if gemini_client is not None:
-        try:
-            prompt = f"Act as a local traffic expert for {city_data['name']}, {city_data.get('country', '')}. My Machine Learning model predicts {status.upper()} traffic ({final_prediction} vehicles/hr). The weather is {weather_main} and {curr['temperature_2m']}°C. The local time is {local_dt.strftime('%I:%M %p')}. Give a short 2-sentence advisory. Importantly, mention 1 or 2 specific major highways, bridges, or famous roads in {city_data['name']} that are likely experiencing this."
-            response = gemini_client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt
-            )
-            gemini_summary = response.text.strip()
-        except Exception as e:
-            print(f"Gemini error: {e}")
-
     
     # Generate 24-hour trend
     trend_data = []
@@ -235,7 +212,6 @@ def predict_traffic(req: PredictionRequest):
             "impact_weather": impact_weather,
             "impact_day": impact_day
         },
-        "gemini_summary": gemini_summary,
         "trend": {
             "labels": labels,
             "data": trend_data
@@ -248,5 +224,5 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    print("\n🚀 Global Traffic AI Server starting at http://127.0.0.1:8000")
+    print("\nGlobal Traffic AI Server starting at http://127.0.0.1:8000")
     uvicorn.run(app, host="127.0.0.1", port=8000)
